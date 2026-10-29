@@ -1,0 +1,50 @@
+name: build-alpine-node-userns
+
+on:
+  schedule:
+    # Weekly, Monday 03:17 UTC
+    - cron: "17 3 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  packages: write        # push to ghcr.io with the built-in GITHUB_TOKEN
+
+env:
+  IMAGE: ghcr.io/${{ github.repository_owner }}/alpine-node-userns
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # aarch64 target (Pi 4) built via QEMU emulation; no native arm
+      # runner needed. Add linux/amd64 to platforms: if you ever want
+      # to run the same image on a desktop.
+      - uses: docker/setup-qemu-action@v3
+      - uses: docker/setup-buildx-action@v3
+
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      # Tag = alpine version parsed from the Containerfile FROM line,
+      # e.g. :3.22, plus :latest. Bumping the base is editing one line.
+      - id: ver
+        run: |
+          v=$(grep -m1 '^FROM alpine:' Containerfile | sed -E 's/^FROM alpine:([0-9.]+).*/\1/')
+          echo "v=$v" >> "$GITHUB_OUTPUT"
+
+      - uses: docker/build-push-action@v6
+        with:
+          context: .
+          platforms: linux/arm64
+          push: true
+          tags: |
+            ${{ env.IMAGE }}:${{ steps.ver.outputs.v }}
+            ${{ env.IMAGE }}:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
