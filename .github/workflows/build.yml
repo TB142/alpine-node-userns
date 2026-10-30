@@ -11,7 +11,7 @@ permissions:
   packages: write        # push to ghcr.io with the built-in GITHUB_TOKEN
 
 env:
-  IMAGE: ghcr.io/${{ github.repository_owner }}/alpine-node-userns
+  IMAGE: ghcr.io/tb142/alpine-node-userns
 
 jobs:
   build:
