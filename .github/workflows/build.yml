@@ -11,7 +11,7 @@ permissions:
   packages: write        # push to ghcr.io with the built-in GITHUB_TOKEN
 
 env:
-  IMAGE: ghcr.io/tb142/alpine-node-userns
+  IMAGE: ghcr.io/${{ github.repository.toLowerCase() }}/alpine-node-userns
 
 jobs:
   build:
@@ -46,5 +46,6 @@ jobs:
           tags: |
             ${{ env.IMAGE }}:${{ steps.ver.outputs.v }}
             ${{ env.IMAGE }}:latest
+            ghcr.io/${{ github.repository.toLowerCase() }}:${{ steps.ver.outputs.v }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
