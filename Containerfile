@@ -1,34 +1,34 @@
-# alpine-node-userns — generic node jam-box, image-built system, ephemeral apk.
-# Built by GH Actions (weekly + manual). Minimal tooling, no baked users,
-# no entrypoint. Persistence lives in bind-mounted /home/service.
+# Name: alpine-node-userns, a generic node jam-box. Buils by GH Actions (weekly + manual).
+# Minimal opinionated with no baked users. Persistence to live in ./<data>:/home bind-mount.
+# Privileges and capabilities may be handled in compose.
 
 FROM alpine:3.22
-# TODO: pin by digest (@sha256:…) for reproducibility; note a pinned digest
-# does NOT float the base on weekly rebuilds — that takes a bump bot
-# (renovate/dependabot). As-is, the minor tag floats within 3.22.x.
 
-# nodejs on alpine is the LTS line of that release; check what the pinned
-# release actually ships (apk policy nodejs) — if you need newer, there's
-# nodejs-current. Decide deliberately, then it stays stable per release.
 RUN apk add --no-cache \
       nodejs \
       npm \
       bash \
+      curl \
+      unzip \
+      jq \
       git \
       openssh-client \
-      ca-certificates
+      openssh-server \
+      ca-certificates \
+      tini
 
 # The only two dirs this image promises. Owned by the runtime uid;
 # no passwd entry is created — uid 1000 exists only numerically.
-RUN mkdir -p /home/service /space && chown -R 1000:1000 /home/service /space
+RUN mkdir -p /home /home/space && chown -R 1000:1000 /home
 
 # No /etc/passwd entry means node/npm need HOME spelled out.
 # PATH expansion inside ENV is legal Containerfile syntax
-ENV HOME=/home/service
-ENV NPM_CONFIG_PREFIX=/home/service/.npm-global
-ENV PATH=/home/service/.npm-global/bin:$PATH
+ENV HOME=/home
+ENV NPM_CONFIG_PREFIX=/home/.npm-global
+ENV PATH=/home/.npm-global/bin:$PATH
 
-WORKDIR /space
+WORKDIR /home/space
 
 # Container idles; the operator execs in.
+ENTRYPOINT ["/sbin/tini", "--"]
 CMD ["sleep", "infinity"]
