@@ -23,7 +23,7 @@ RUN mkdir -p /home/service/space && chown -R 1000:1000 /home/service
 
 # No /etc/passwd entry means node/npm need HOME spelled out.
 # PATH expansion inside ENV is legal Containerfile syntax
-ENV HOME=/home
+ENV HOME=/home/service
 ENV NPM_CONFIG_PREFIX=/home/service/.npm-global
 ENV PATH=/home/service/.npm-global/bin:$PATH
 
