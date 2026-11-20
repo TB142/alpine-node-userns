@@ -19,7 +19,7 @@ RUN apk add --no-cache \
 
 # The only two dirs this image promises. Owned by the runtime uid;
 # no passwd entry is created — uid 1000 exists only numerically.
-RUN mkdir -p /home/service/space && chown -R 1000:1000 /home/service
+RUN mkdir -p /home/service /space && chown -R 1000:1000 /home/service /space
 
 # No /etc/passwd entry means node/npm need HOME spelled out.
 # PATH expansion inside ENV is legal Containerfile syntax
@@ -27,7 +27,7 @@ ENV HOME=/home/service
 ENV NPM_CONFIG_PREFIX=/home/service/.npm-global
 ENV PATH=/home/service/.npm-global/bin:$PATH
 
-WORKDIR /home/service/space
+WORKDIR /space
 
 # Container idles; the operator execs in.
 ENTRYPOINT ["/sbin/tini", "--"]
